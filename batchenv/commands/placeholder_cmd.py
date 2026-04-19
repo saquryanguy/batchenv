@@ -6,14 +6,23 @@ from batchenv.parser import parse_env_file, serialize_env
 from batchenv.placeholder import fill_envs, format_placeholder_report
 
 
-def run(args: argparse.Namespace) -> int:
+def _parse_key_value_pairs(pairs: list[str]) -> tuple[dict[str, str] | None, str | None]:
+    """Parse a list of 'KEY=VALUE' strings into a dict. Returns (dict, None) on success
+    or (None, error_message) on failure."""
     values: dict[str, str] = {}
-    for pair in args.set or []:
+    for pair in pairs:
         if "=" not in pair:
-            print(f"Invalid key=value pair: {pair}", file=sys.stderr)
-            return 1
+            return None, f"Invalid key=value pair: {pair}"
         k, v = pair.split("=", 1)
         values[k.strip()] = v.strip()
+    return values, None
+
+
+def run(args: argparse.Namespace) -> int:
+    values, error = _parse_key_value_pairs(args.set or [])
+    if error:
+        print(error, file=sys.stderr)
+        return 1
 
     if not values:
         print("No values provided via --set.", file=sys.stderr)
