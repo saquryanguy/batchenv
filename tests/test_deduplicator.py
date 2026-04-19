@@ -64,3 +64,18 @@ def test_format_report_no_duplicates():
     result = dedupe_env("clean.env", env, raw)
     report = format_dedupe_report([result])
     assert "no duplicates" in report
+
+
+def test_format_report_multiple_files():
+    """Report should include entries for all files, changed or not."""
+    env_changed = {"A": "2"}
+    raw_changed = ["A=1\n", "A=2\n"]
+    env_clean = {"B": "1"}
+    raw_clean = ["B=1\n"]
+    results = [
+        dedupe_env("dirty.env", env_changed, raw_changed),
+        dedupe_env("clean.env", env_clean, raw_clean),
+    ]
+    report = format_dedupe_report(results)
+    assert "dirty.env" in report
+    assert "clean.env" in report
