@@ -48,6 +48,19 @@ def test_strip_comments_envs_unchanged(tmp_dir):
     assert results[0].changed is False
 
 
+def test_strip_comments_envs_multiple_files(tmp_dir):
+    """Verify that strip_comments_envs processes multiple files independently."""
+    p1 = _write(tmp_dir / ".env.one", "# comment\nKEY=val\n")
+    p2 = _write(tmp_dir / ".env.two", "FOO=bar\n")
+    results = strip_comments_envs([p1, p2])
+    assert len(results) == 2
+    changed = [r for r in results if r.changed]
+    unchanged = [r for r in results if not r.changed]
+    assert len(changed) == 1
+    assert len(unchanged) == 1
+    assert changed[0].stripped_lines == 1
+
+
 def test_format_strip_comments_report(tmp_dir):
     p = _write(tmp_dir / ".env", "# hi\nKEY=val\n")
     results = strip_comments_envs([p])
