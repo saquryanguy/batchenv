@@ -83,3 +83,16 @@ def test_sync_missing_target_returns_error(tmp_dir: Path) -> None:
     source = _write(tmp_dir / ".env.source", "A=1\n")
     code = run(str(source), [str(tmp_dir / "nonexistent")])
     assert code == 1
+
+
+def test_sync_multiple_targets(tmp_dir: Path) -> None:
+    """Syncing a source to multiple targets updates all of them."""
+    source = _write(tmp_dir / ".env.source", "A=1\nB=2\n")
+    target1 = _write(tmp_dir / ".env.target1", "A=1\n")
+    target2 = _write(tmp_dir / ".env.target2", "A=1\n")
+
+    code = run(str(source), [str(target1), str(target2)])
+
+    assert code == 0
+    assert parse_env_file(target1)["B"] == "2"
+    assert parse_env_file(target2)["B"] == "2"
