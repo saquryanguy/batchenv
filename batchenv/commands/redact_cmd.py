@@ -4,6 +4,16 @@ from batchenv.parser import parse_env_file, serialize_env
 from batchenv.redactor import redact_envs, format_redact_report, DEFAULT_PATTERNS
 
 
+def _parse_patterns(patterns_arg: str | None) -> set[str]:
+    """Parse the comma-separated patterns argument into a set of pattern strings.
+
+    Falls back to DEFAULT_PATTERNS if no argument is provided.
+    """
+    if not patterns_arg:
+        return DEFAULT_PATTERNS
+    return {p.strip() for p in patterns_arg.split(",") if p.strip()}
+
+
 def run(args: argparse.Namespace) -> int:
     paths = [Path(p) for p in args.files]
     missing = [p for p in paths if not p.exists()]
@@ -12,7 +22,7 @@ def run(args: argparse.Namespace) -> int:
             print(f"error: file not found: {m}")
         return 1
 
-    patterns = set(args.patterns.split(",")) if args.patterns else DEFAULT_PATTERNS
+    patterns = _parse_patterns(args.patterns)
     placeholder = args.placeholder or "***"
 
     envs = {str(p): parse_env_file(p) for p in paths}
