@@ -10,14 +10,22 @@ from batchenv.pinner import format_pin_report, pin_envs
 
 
 def _parse_pins(pairs: List[str]) -> dict[str, str]:
-    """Parse KEY=VALUE strings into a dict."""
+    """Parse KEY=VALUE strings into a dict.
+
+    Raises a user-friendly error and exits if any pair is malformed or if
+    a key is empty after stripping whitespace.
+    """
     pins: dict[str, str] = {}
     for pair in pairs:
         if "=" not in pair:
             print(f"[error] invalid pin format (expected KEY=VALUE): {pair}", file=sys.stderr)
             sys.exit(1)
         key, _, value = pair.partition("=")
-        pins[key.strip()] = value
+        key = key.strip()
+        if not key:
+            print(f"[error] pin key must not be empty: {pair!r}", file=sys.stderr)
+            sys.exit(1)
+        pins[key] = value
     return pins
 
 
