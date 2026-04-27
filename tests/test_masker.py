@@ -83,6 +83,17 @@ def test_mask_envs_multiple_files():
     assert all(r.masked["KEY"] == DEFAULT_MASK for r in results)
 
 
+def test_mask_envs_preserves_path():
+    """Each MaskResult returned by mask_envs should carry the correct file path."""
+    envs = {
+        "first.env": {"TOKEN": "abc"},
+        "second.env": {"TOKEN": "xyz"},
+    }
+    results = mask_envs(envs, keys=["TOKEN"])
+    paths = {r.path for r in results}
+    assert paths == {"first.env", "second.env"}
+
+
 def test_format_mask_report_with_changes():
     env = {"SECRET": "x"}
     result = mask_env(env, "prod.env")
@@ -95,4 +106,4 @@ def test_format_mask_report_with_changes():
 def test_format_mask_report_no_changes():
     result = MaskResult(path="empty.env", original={}, masked={}, keys_masked=[], changed=False)
     report = format_mask_report([result])
-    assert "no changes" in report
+    assert "no ch
